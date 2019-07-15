@@ -1,3 +1,5 @@
 .DS_Store
 .idea
 .git
+__pycache__
+score
