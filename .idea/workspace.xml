@@ -7,7 +7,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="487dba0c-75bb-4865-b993-1c5ff5744d7a" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/Autodori.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/SongInfo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_processor.py" beforeDir="false" afterPath="$PROJECT_DIR$/UILogicControl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/player.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/util.py" beforeDir="false" afterPath="$PROJECT_DIR$/Util.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,19 +38,22 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/main.py">
+        <entry file="file://$PROJECT_DIR$/Autodori.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="89">
-              <caret line="25" selection-start-line="25" selection-end-line="25" selection-end-column="26" />
+            <state relative-caret-position="630">
+              <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
+              <folding>
+                <element signature="e#55#73#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/util.py">
+        <entry file="file://$PROJECT_DIR$/Util.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="22" column="13" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
+            <state relative-caret-position="-469">
+              <caret line="7" column="79" selection-start-line="7" selection-start-column="79" selection-end-line="7" selection-end-column="79" />
               <folding>
                 <element signature="e#0#17#0" expanded="true" />
               </folding>
@@ -51,22 +62,25 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/player.py">
+        <entry file="file://$PROJECT_DIR$/SongInfo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="31">
-              <caret line="136" column="9" selection-start-line="136" selection-start-column="9" selection-end-line="136" selection-end-column="9" />
+            <state relative-caret-position="-2380">
+              <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
+                <element signature="e#1335#2851#0" />
+                <element signature="e#2967#3432#1" />
+                <element signature="e#3601#3683#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/img_processor.py">
+        <entry file="file://$PROJECT_DIR$/UILogicControl.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" selection-start-line="2" selection-end-line="2" />
+            <state relative-caret-position="120">
+              <caret line="8" selection-start-line="8" selection-end-line="8" />
             </state>
           </provider>
         </entry>
@@ -75,19 +89,28 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor>
-                <caret lean-forward="true" />
+              <first_editor relative-caret-position="30">
+                <caret line="2" column="57" selection-start-line="2" selection-start-column="57" selection-end-line="2" selection-end-column="57" />
               </first_editor>
               <second_editor />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$USER_HOME$/Desktop/Packages/test.py">
+          <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="60">
-              <caret line="4" column="5" lean-forward="true" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
+              <caret line="9" column="8" lean-forward="true" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -108,7 +131,18 @@
       <find>trace</find>
       <find>gen_</find>
       <find>gen_ms</find>
+      <find>complicateRandomMove</find>
+      <find>randomTimeDelay</find>
+      <find>music_info</find>
+      <find>note_info</find>
+      <find>score</find>
+      <find>timestamped_actions</find>
     </findStrings>
+    <replaceStrings>
+      <replace>_randomTimeDelay</replace>
+      <replace>self.note_info</replace>
+      <replace>self.score</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -2372,22 +2406,26 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$USER_HOME$/Desktop/Packages/test.py" />
         <option value="$PROJECT_DIR$/anti-anti-cheat.py" />
         <option value="$PROJECT_DIR$/utility.py" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/img_processor.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/util.py" />
         <option value="$PROJECT_DIR$/player.py" />
+        <option value="$PROJECT_DIR$/SongInfo.py" />
+        <option value="$USER_HOME$/Desktop/Packages/test.py" />
+        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/Autodori.py" />
+        <option value="$PROJECT_DIR$/Util.py" />
+        <option value="$PROJECT_DIR$/UILogicControl.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="27" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="56" />
     <option name="y" value="23" />
-    <option name="width" value="1286" />
+    <option name="width" value="1384" />
     <option name="height" value="877" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -2565,19 +2603,18 @@
       <workItem from="1562911116121" duration="13865000" />
       <workItem from="1563156570284" duration="363000" />
       <workItem from="1563157226275" duration="1766000" />
-      <workItem from="1563160922531" duration="16513000" />
+      <workItem from="1563160922531" duration="31840000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="44919000" />
+    <option name="totallyTimeSpent" value="60246000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="27" y="23" width="1286" height="877" extended-state="0" />
-    <editor active="true" />
+    <frame x="28" y="23" width="1412" height="877" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.36311787" visible="true" weight="0.1454984" />
-      <window_info id="Structure" order="1" sideWeight="0.6368821" side_tool="true" visible="true" weight="0.1454984" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.36311787" visible="true" weight="0.1321168" />
+      <window_info id="Structure" order="1" sideWeight="0.6368821" side_tool="true" visible="true" weight="0.1321168" />
       <window_info id="Captures" order="2" weight="0.25" />
       <window_info id="Favorites" order="3" side_tool="true" />
       <window_info id="Build Variants" order="4" side_tool="true" />
@@ -2619,13 +2656,6 @@
     <entry file="file://$PROJECT_DIR$/app/build/generated/not_namespaced_r_class_sources/debug/processDebugResources/r/androidx/versionedparcelable/R.java" />
     <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
     <entry file="file://$PROJECT_DIR$/anti-anti-cheat.py" />
-    <entry file="file://$USER_HOME$/Desktop/Packages/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/random.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="167">
@@ -2654,54 +2684,74 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/img_processor.py">
+    <entry file="file://$USER_HOME$/Library/Caches/PyCharm2018.3/python_stubs/776880377/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        <state relative-caret-position="3766">
+          <caret line="769" column="8" selection-start-line="769" selection-start-column="8" selection-end-line="769" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
+    <entry file="file://$PROJECT_DIR$/Autodori.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="89">
-          <caret line="25" selection-start-line="25" selection-end-line="25" selection-end-column="26" />
+        <state relative-caret-position="630">
+          <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
+          <folding>
+            <element signature="e#55#73#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/util.py">
+    <entry file="file://$PROJECT_DIR$/SongInfo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="22" column="13" selection-start-line="22" selection-start-column="13" selection-end-line="22" selection-end-column="13" />
+        <state relative-caret-position="-2380">
+          <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+            <element signature="e#1335#2851#0" />
+            <element signature="e#2967#3432#1" />
+            <element signature="e#3601#3683#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-469">
+          <caret line="7" column="79" selection-start-line="7" selection-start-column="79" selection-end-line="7" selection-end-column="79" />
           <folding>
             <element signature="e#0#17#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/UILogicControl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" selection-start-line="8" selection-end-line="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor>
-            <caret lean-forward="true" />
+          <first_editor relative-caret-position="30">
+            <caret line="2" column="57" selection-start-line="2" selection-start-column="57" selection-end-line="2" selection-end-column="57" />
           </first_editor>
           <second_editor />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/player.py">
+    <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="31">
-          <caret line="136" column="9" selection-start-line="136" selection-start-column="9" selection-end-line="136" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="75">
+          <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
+    <entry file="file://$USER_HOME$/Desktop/Packages/test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
-          <caret line="4" column="5" lean-forward="true" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
+          <caret line="9" column="8" lean-forward="true" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
         </state>
       </provider>
     </entry>

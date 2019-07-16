@@ -3,3 +3,4 @@
 .git
 __pycache__
 score
+*.pyc
