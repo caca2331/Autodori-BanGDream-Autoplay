@@ -4,3 +4,8 @@
 __pycache__
 score
 *.pyc
+*test*
+arp.jar
+bin_event5
+adb
+sendmoreevent.c

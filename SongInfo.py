@@ -11,12 +11,11 @@ import time
 #
 
 
-complicateRandomMove = False
 randomTimeDelay = True
 
 
 class SongInfo:
-    def __init__(self, song_name, device_info, global_delay=0, player_lv=10):
+    def __init__(self, song_name=None, device_info=None, global_delay=0, player_lv=10):
         self.song_name = song_name
         self.device_info = device_info
         self.global_delay = global_delay
@@ -149,35 +148,87 @@ class SongInfo:
                 #     # (60% 2-3.5, miss otherwise) * p_miss
                 #     else:
 
-                if random.random < .5:
+                if random.random() < .5:
                     local_offset = -local_offset
 
-            result = (four_beat * 4 + i // 2 * beat_per_division) * self.music_info["bpm"] + local_offset
+            result = (four_beat * 4 + i // 2 * beat_per_division) * 60.0 / int(self.music_info["bpm"]) + local_offset
             return result if result > 0 else 0
 
+        # generate a random location on a track
         def gen_touch_loc(flick=False):
             x1, x2, y1, y2 = self.device_info.track_loc[track]
             if flick:
-                return rand_loc(x1, x2, y2 + y2 - y1, y1)
+                return rand_loc(x1, x2, y1 + y1 + y1 - y2 - y2, y1 + y1 - y2)
             return rand_loc(x1, x2, y1, y2)
 
-        def add_touch_command(action_list, finish_with_flick=False):
-            touch_command_list = []
+        # translate action_list into command that can be executed by adb
+        def add_touch_cmd_(action_list, finish_with_flick=False):
+            touch_command_list = ["input", "swipe"]
+            time_offset, (x, y) = action_list[0]
+            # single touch
             if len(action_list) == 1:
-                if finish_with_flick:
-                    pass
+                if finish_with_flick:  # finger sticks on screen for 0.15s while flicking
+                    x2, y2 = gen_touch_loc(True)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
                 else:
-                    pass
-            else:
+                    x2, y2 = rand_loc(x - 5, y - 5, x + 5, y + 5)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch())]
 
-                if finish_with_flick:
-                    pass
+            # bar / slide
+            else:
+                for i in range(1, len(action_list)):
+                    time_offset2, (x2, y2) = action_list[i]
+                    if time_offset + 0.08 > time_offset2:
+                        time_offset2 = time_offset + 0.08
+
+                    touch_command_list += ["&", "input", "swipe"]
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * (time_offset2 - time_offset))]
+
+                    time_offset, x, y = time_offset2, x2, y2
+
+                if finish_with_flick: # finger sticks on screen for 0.15s while flicking
+                    touch_command_list += ["&", "input", "swipe"]
+                    x2, y2 = gen_touch_loc(True)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
 
             self.timestamped_actions.append((action_list[0][0], touch_command_list))
 
+        # create continuous touch by multiple individual call with adb
+        def add_touch_cmd(action_list, finish_with_flick=False):
+            touch_command_list = ["input", "swipe"]
+            time_offset, (x, y) = action_list[0]
+            # single touch
+            if len(action_list) == 1:
+                if finish_with_flick:  # finger sticks on screen for 0.15s while flicking
+                    x2, y2 = gen_touch_loc(True)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
+                else:
+                    x2, y2 = rand_loc(x - 5, y - 5, x + 5, y + 5)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch())]
+
+            # bar / slide
+            else:
+                for i in range(1, len(action_list)):
+                    time_offset2, (x2, y2) = action_list[i]
+                    if time_offset + 0.08 > time_offset2:
+                        time_offset2 = time_offset + 0.08
+
+                    touch_command_list += ["&", "input", "swipe"]
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * (time_offset2 - time_offset))]
+
+                    time_offset, x, y = time_offset2, x2, y2
+
+                if finish_with_flick: # finger sticks on screen for 0.15s while flicking
+                    touch_command_list += ["&", "input", "swipe"]
+                    x2, y2 = gen_touch_loc(True)
+                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
+
+            self.timestamped_actions.append((action_list[0][0], touch_command_list))
+        self.timestamped_actions = []  # reset
+
         slide_a = []  # slide a
         slide_b = []  # slide b
-        v = [[] for _temp in range(8)]  # vertical slide
+        v = [[] for _temp in range(9)]  # vertical slide
         for u in self.score:
 
             four_beat = int(u[0])
@@ -223,15 +274,15 @@ class SongInfo:
                 if note_type == 5:
                     v[track].append(temp_cmd_of_token)
                     if len([track]) == 2:  # end of vertical slide
-                        add_touch_command(v[track], token in ["flick", "fever_note_flick"])
+                        add_touch_cmd(v[track], token in ["flick", "fever_note_flick"])
                         v[track] = []
 
                 # single note, or non-vertical slide
                 else:
                     if token in ["bd", "skill", "fever_note"]:
-                        add_touch_command([temp_cmd_of_token])
+                        add_touch_cmd([temp_cmd_of_token])
                     elif token in ["flick", "fever_note_flick"]:
-                        add_touch_command([temp_cmd_of_token], True)
+                        add_touch_cmd([temp_cmd_of_token], True)
 
                     elif token in ["slide_a"]:
                         slide_a.append(temp_cmd_of_token)
@@ -240,28 +291,22 @@ class SongInfo:
 
                     elif token in ["slide_end_a", "slide_end_flick_a"]:
                         slide_a.append(temp_cmd_of_token)
-                        add_touch_command(slide_a, token in ["slide_end_flick_a"])
+                        add_touch_cmd(slide_a, token in ["slide_end_flick_a"])
                         slide_a = []
                     elif token in ["slide_end_b", "slide_end_flick_b"]:
                         slide_b.append(temp_cmd_of_token)
-                        add_touch_command(slide_b, token in ["slide_end_flick_b"])
+                        add_touch_cmd(slide_b, token in ["slide_end_flick_b"])
                         slide_b = []
 
     def start_auto_play(self):
         begin = time.time()
         for time_offset, command in self.timestamped_actions:
-
+            print(time_offset, command, time.ctime())
             if time.time() < time_offset + begin:
                 time.sleep(time_offset + begin - time.time())
-            run_cmd(command)
+            run_cmd(["./adb", "shell"] + command)
 
 
 # debug use
 if __name__ == "__main__":
-    # a, b, c = init_score("yes_bang_dream_easy.txt")
-    # print(b)
-    # print("*********************")
-    # print(c)
-    # print("*********************")
-    # print(a)
     pass
