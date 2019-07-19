@@ -2,19 +2,18 @@ import subprocess
 import random
 import time
 
+# import cv3
 
-#
+
+is_ios = False
+randomTimeDelay = False  # whether there should be extra time delay for actions
+
+
 class DeviceInfo:
     def __init__(self):
-        sp = subprocess.Popen(["./adb", "shell", "wm", "size"], stdout=subprocess.PIPE)
-        sp.wait()
+        self.w, self.h = self.get_resolution()
 
-        info = str(sp.stdout.readline()).split()[2]
-        if "\\n" in info:
-            info = info[:len(info) - 3]
-        x_loc = info.index("x")
-        self.w, self.h = int(info[:x_loc]), int(info[x_loc + 1:])
-
+        # data from iPhone8, with resolution of 1136 * 640
         self.track_loc = [
             None,
             (self.w * 240.7 / 1136.0, self.h * 505 / 640.0, self.w * 370.7 / 1136.0, self.h * 545 / 640.0),
@@ -38,6 +37,22 @@ class DeviceInfo:
         self.layer5_score_confirm_loc = 0
         self.layer6_rank_up_loc = 0
 
+    def get_resolution(self):
+        def get_android_resolution():
+            sp = subprocess.Popen(["./adb", "shell", "wm", "size"], stdout=subprocess.PIPE)
+            sp.wait()
+
+            info = str(sp.stdout.readline()).split()[2]
+            if "\\n" in info:
+                info = info[:len(info) - 3]
+            x_loc = info.index("x")
+            return int(info[:x_loc]), int(info[x_loc + 1:])
+
+        def get_ios_resolution():
+            pass
+
+        return get_ios_resolution() if is_ios else get_android_resolution()
+
 
 class ImgProcess:
     def __init__(self):
@@ -45,20 +60,18 @@ class ImgProcess:
 
     @staticmethod
     def screenshot():
-        # subprocess.Popen
-        subprocess.run(["adb", "shell", "screencap", "-p", ">cap.png"])
+        if is_ios:
+            pass
+        else:
+            subprocess.run(["adb", "shell", "screencap", "-p", ">cap.png"])
 
 
 def run_cmd(cmd):
-    # if len(cmd)==7:
     subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
 
 # TODO: confirm delay from adb to phone
 def gen_move(x1, y1, x2=None, y2=None, duration=0.01, prev=None):
-    """
-    only x1, y1:
-    """
     if x2 is None:
         return ["adb", "shell", "input", "", x1, y1, x1, y1, str(duration)]
     if prev is None:

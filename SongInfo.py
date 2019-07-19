@@ -11,8 +11,6 @@ import time
 #
 
 
-randomTimeDelay = True
-
 
 class SongInfo:
     def __init__(self, song_name=None, device_info=None, global_delay=0, player_lv=10):
@@ -127,29 +125,31 @@ class SongInfo:
             if not randomTimeDelay:
                 local_offset = 0
             else:
-                local_offset = 0
-                #     # for now, assume both bound are 40, and has same probably to go beyond each
-                #     l, h = -40, 40  # lower bound, upper(high) bound
-                #     if random.random() < p_perfect:
-                #         # (40% 0-0.3 21% 0.3-0.5 19% 0.5-0.72 18% 0.72-0.95 2% 0.95-1) * p_perfect
-                #         r = random.random()  # range
-                #         if r < .4:
-                #             local_offset = random.random(0, .3) * h
-                #         elif r < .61:
-                #             local_offset = random.uniform(.3, .5) * h
-                #         elif r < .8:
-                #             local_offset = random.uniform(.5, .72) * h
-                #         elif r < .98:
-                #             local_offset = random.uniform(.72, .95) * h
-                #         else:
-                #             local_offset = random.uniform(.95, .1) * h
-                #     elif great_miss_ratio < random.uniform(0, 1 + great_miss_ratio):
-                #     # (50% 1-1.4 35% 1.4-1.7 10% 1.7-1.95 5% 1.95-2.0) * p_great
-                #     # (60% 2-3.5, miss otherwise) * p_miss
-                #     else:
 
-                if random.random() < .5:
-                    local_offset = -local_offset
+                # for now, assume both bound are 40, and has same probably to go beyond each
+                l, h = -40, 40  # lower bound, upper(high) bound
+                if random.random() < self.p_perfect:
+                    # (40% 0-0.3 21% 0.3-0.5 19% 0.5-0.72 18% 0.72-0.95 2% 0.95-1) * p_perfect
+                    r = random.random()  # range
+                    if r < .4:
+                        local_offset = random.random(0, .3) * h
+                    elif r < .61:
+                        local_offset = random.uniform(.3, .5) * h
+                    elif r < .8:
+                        local_offset = random.uniform(.5, .72) * h
+                    elif r < .98:
+                        local_offset = random.uniform(.72, .95) * h
+                    else:
+                        local_offset = random.uniform(.95, .1) * h
+                elif self.great_miss_ratio < random.uniform(0, 1 + self.great_miss_ratio):
+                    pass
+                # (50% 1-1.4 35% 1.4-1.7 10% 1.7-1.95 5% 1.95-2.0) * p_great
+                # (60% 2-3.5, miss otherwise) * p_miss
+                else:
+                    pass
+
+            if random.random() < .5:
+                local_offset = -local_offset
 
             result = (four_beat * 4 + i // 2 * beat_per_division) * 60.0 / int(self.music_info["bpm"]) + local_offset
             return result if result > 0 else 0
