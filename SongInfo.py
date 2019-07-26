@@ -1,22 +1,29 @@
-import random
-from Util import *
-from UILogicControl import *
 import re
-import sys
-import threading
-import time
+import json
+from sys import argv
+
+from Util import *
+
 
 #
-# This file process the song data and plays the song
+# This file process the song data
 #
-
+# Useless knowledge:
+#
 
 
 class SongInfo:
-    def __init__(self, song_name=None, device_info=None, global_delay=0, player_lv=10):
+    # constants used for song play generation
+    F_DUR = 0.08  # expected duration of flick
+    STICK_DUR = 0.05  # expected duration of a touch on the the screen
+    SLIDE_STICK_DUR = 0.08  # min time for a finger to stay between two notes within a slide
+
+    IN_AIR_DUR = 0.08  # min time for a finger to stay in air between two touches
+
+    def __init__(self, song_name=None, screen_info=None, player_lv=10):
         self.song_name = song_name
-        self.device_info = device_info
-        self.global_delay = global_delay
+        self.screen_info = screen_info
+        # self.global_delay = global_delay
 
         # normal good player(fc lv25 songs) will be 10,
         # 20 will be very good player,
@@ -37,7 +44,7 @@ class SongInfo:
         self.score = []
         self.music_info = {}
         self.note_info = {}
-        self.timestamped_actions = []
+        self.timed_actions = []
 
         ''' constants '''
         # note data (range in milliseconds for perfect)
@@ -59,7 +66,7 @@ class SongInfo:
             'id': '#WAV01 bgm(\\d*).wav',
         }
 
-        file_object = open('score/' + self.song_name, 'rU')
+        file_object = open('score/' + self.song_name + '.txt', 'rU')
 
         read_step = 0
         try:
@@ -98,7 +105,7 @@ class SongInfo:
             file_object.close()
 
     # convert score into timestamped actions
-    def init_timestamped_actions(self):
+    def init_timed_actions(self):
         """
         types of misses:
         single touch:
@@ -156,78 +163,46 @@ class SongInfo:
 
         # generate a random location on a track
         def gen_touch_loc(flick=False):
-            x1, x2, y1, y2 = self.device_info.track_loc[track]
+            x1, x2, y1, y2 = self.screen_info.track_loc[track]
             if flick:
                 return rand_loc(x1, x2, y1 + y1 + y1 - y2 - y2, y1 + y1 - y2)
             return rand_loc(x1, x2, y1, y2)
 
-        # translate action_list into command that can be executed by adb
-        def add_touch_cmd_(action_list, finish_with_flick=False):
-            touch_command_list = ["input", "swipe"]
-            time_offset, (x, y) = action_list[0]
-            # single touch
-            if len(action_list) == 1:
-                if finish_with_flick:  # finger sticks on screen for 0.15s while flicking
-                    x2, y2 = gen_touch_loc(True)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
-                else:
-                    x2, y2 = rand_loc(x - 5, y - 5, x + 5, y + 5)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch())]
-
-            # bar / slide
-            else:
-                for i in range(1, len(action_list)):
-                    time_offset2, (x2, y2) = action_list[i]
-                    if time_offset + 0.08 > time_offset2:
-                        time_offset2 = time_offset + 0.08
-
-                    touch_command_list += ["&", "input", "swipe"]
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * (time_offset2 - time_offset))]
-
-                    time_offset, x, y = time_offset2, x2, y2
-
-                if finish_with_flick: # finger sticks on screen for 0.15s while flicking
-                    touch_command_list += ["&", "input", "swipe"]
-                    x2, y2 = gen_touch_loc(True)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
-
-            self.timestamped_actions.append((action_list[0][0], touch_command_list))
-
         # create continuous touch by multiple individual call with adb
         def add_touch_cmd(action_list, finish_with_flick=False):
-            touch_command_list = ["input", "swipe"]
+            touch_command_list = []
             time_offset, (x, y) = action_list[0]
             # single touch
             if len(action_list) == 1:
                 if finish_with_flick:  # finger sticks on screen for 0.15s while flicking
                     x2, y2 = gen_touch_loc(True)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
+                    touch_command_list.append([x, y, x2, y2, rand_time_for_touch(SongInfo.F_DUR)])
                 else:
                     x2, y2 = rand_loc(x - 5, y - 5, x + 5, y + 5)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch())]
+                    touch_command_list.append([x, y, x2, y2, rand_time_for_touch(SongInfo.STICK_DUR)])
 
             # bar / slide
             else:
                 for i in range(1, len(action_list)):
                     time_offset2, (x2, y2) = action_list[i]
-                    if time_offset + 0.08 > time_offset2:
-                        time_offset2 = time_offset + 0.08
+                    if time_offset + SongInfo.SLIDE_STICK_DUR > time_offset2:
+                        time_offset2 = time_offset + SongInfo.SLIDE_STICK_DUR
 
-                    touch_command_list += ["&", "input", "swipe"]
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * (time_offset2 - time_offset))]
+                    touch_command_list.append([x, y, x2, y2, time_offset2 - time_offset])
 
                     time_offset, x, y = time_offset2, x2, y2
 
-                if finish_with_flick: # finger sticks on screen for 0.15s while flicking
-                    touch_command_list += ["&", "input", "swipe"]
+                if finish_with_flick:  # finger sticks on screen for 0.15s while flicking
                     x2, y2 = gen_touch_loc(True)
-                    touch_command_list += [str(x), str(y), str(x2), str(y2), str(1000 * rand_time_for_touch(0.15))]
+                    touch_command_list.append([x, y, x2, y2, rand_time_for_touch(SongInfo.F_DUR)])
 
-            self.timestamped_actions.append((action_list[0][0], touch_command_list))
-        self.timestamped_actions = []  # reset
+            timed_actions_without_id.append((action_list[0][0], touch_command_list))
 
-        slide_a = []  # slide a
-        slide_b = []  # slide b
+        self.timed_actions = []
+        timed_actions_without_id = []  # reset
+
+        slide_a, slide_b = [], []  # slide a, slide b
+
         v = [[] for _temp in range(9)]  # vertical slide
         for u in self.score:
 
@@ -298,15 +273,63 @@ class SongInfo:
                         add_touch_cmd(slide_b, token in ["slide_end_flick_b"])
                         slide_b = []
 
+        ''' *** *** '''
+        list.sort(timed_actions_without_id)
+        finger = [-1, -1]  # the latest time that either finger is touched down (finger0 and finger1)
+        for start_time, actions in timed_actions_without_id:
+            # determine which finger to use
+            # if finger0 not in use, use it.
+            if finger[0] + SongInfo.IN_AIR_DUR <= start_time:
+                finger_to_use = 0
+            # else if finger1 not in use, use it.
+            elif finger[1] + SongInfo.IN_AIR_DUR <= start_time:
+                finger_to_use = 1
+            # else use whichever finger that is available sooner.
+            elif finger[1] + SongInfo.IN_AIR_DUR <= finger[0]:
+                finger_to_use = 1
+                start_time = min(finger) + SongInfo.IN_AIR_DUR
+            else:
+                finger_to_use = 0
+                start_time = min(finger) + SongInfo.IN_AIR_DUR
+
+            ttl_dur = 0
+            for i in range(len(actions)):
+                # format: [ [time_in_sec, finger_id, x1, y1, x2, y2, duration_in_sec,
+                #            is_start_with_finger_attached(1 or 0), is_end_with_finger_attached(1 or 0)] ... ]
+                self.timed_actions.append([start_time + ttl_dur, finger_to_use,
+                                           round(actions[i][0]), round(actions[i][1]),
+                                           round(actions[i][2]), round(actions[i][3]), actions[i][4],
+                                           0 if i == 0 else 1, 0 if i == len(actions) - 1 else 1])
+                ttl_dur += actions[i][4]
+
+            finger[finger_to_use] = start_time + ttl_dur
+
+    # write timestamped commands to a json file.
+    # format: [ [time_in_sec, finger_id, x1, y1, x2, y2, duration_in_sec,
+    #            is_start_with_finger_attached(1 or 0), is_end_with_finger_attached(1 or 0)] ... ]
+    def write_to_file(self, name=None):
+        if name is None:
+            name = self.song_name + '-timed_actions'
+        with open('build/' + name + '.json', 'w') as f:
+            json.dump(self.timed_actions, f)
+
     def start_auto_play(self):
         begin = time.time()
-        for time_offset, command in self.timestamped_actions:
+        for time_offset, command in self.timed_actions:
             print(time_offset, command, time.ctime())
             if time.time() < time_offset + begin:
                 time.sleep(time_offset + begin - time.time())
             run_cmd(["./adb", "shell"] + command)
 
+    @staticmethod
+    def gen_timed_actions(song_name, w, h, player_lv):
+        song = SongInfo(song_name, ScreenInfo(w, h), player_lv)
 
-# debug use
+
 if __name__ == "__main__":
-    pass
+    print("Usage: song_name, [screen width] [screen height] [player_lv]")
+    SongInfo.gen_timed_actions(argv[1],
+                               argv[2] if len(argv) > 1 else None,
+                               argv[3] if len(argv) > 2 else None,
+                               argv[4] if len(argv) > 3 else None
+                               )

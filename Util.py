@@ -5,13 +5,12 @@ import time
 # import cv3
 
 
-is_ios = False
 randomTimeDelay = False  # whether there should be extra time delay for actions
 
 
-class DeviceInfo:
-    def __init__(self):
-        self.w, self.h = self.get_resolution()
+class ScreenInfo:
+    def __init__(self, w=None, h=None):
+        self.w, self.h = ScreenInfo.get_resolution() if w is None else (w, h)
 
         # data from iPhone8, with resolution of 1136 * 640
         self.track_loc = [
@@ -37,7 +36,8 @@ class DeviceInfo:
         self.layer5_score_confirm_loc = 0
         self.layer6_rank_up_loc = 0
 
-    def get_resolution(self):
+    @staticmethod
+    def get_resolution(deviceType="default"):
         def get_android_resolution():
             sp = subprocess.Popen(["./adb", "shell", "wm", "size"], stdout=subprocess.PIPE)
             sp.wait()
@@ -51,7 +51,12 @@ class DeviceInfo:
         def get_ios_resolution():
             pass
 
-        return get_ios_resolution() if is_ios else get_android_resolution()
+        def get_debug_resolution():
+            return 1000, 1000
+
+        return get_ios_resolution() if deviceType == "i" \
+            else get_android_resolution() if deviceType == "a" \
+            else get_debug_resolution()
 
 
 class ImgProcess:
@@ -60,10 +65,7 @@ class ImgProcess:
 
     @staticmethod
     def screenshot():
-        if is_ios:
-            pass
-        else:
-            subprocess.run(["adb", "shell", "screencap", "-p", ">cap.png"])
+        subprocess.run(["adb", "shell", "screencap", "-p", ">cap.png"])
 
 
 def run_cmd(cmd):
@@ -99,7 +101,5 @@ def rand_time_for_touch(expected_time=0.05):
     if random.random() < .5:
         return random.uniform(.8, 1) * expected_time
     if random.random() < .8:
-        return random.uniform(1, 1.5) * expected_time
-    return random.uniform(1.5, 2) * expected_time
-
-# def
+        return random.uniform(1, 1.2) * expected_time
+    return random.uniform(1.2, 6) * expected_time

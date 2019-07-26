@@ -3,8 +3,8 @@ Autodori: BanG Dream auto player
 By caca2331
 """
 
-from Util import *
 from SongInfo import *
+import sys
 
 usage = "Usage:\n" \
         "Help        help, show this page\n" \
@@ -17,7 +17,7 @@ usage = "Usage:\n" \
         "Quit        quit program\n"
 
 
-device = DeviceInfo()
+screen = ScreenInfo()
 
 print(usage)
 global_delay = 0
@@ -35,12 +35,12 @@ while True:
     elif cmd[0] in ["s", "S", "set", "Set"]:
         # song_name = input("Enter song name:")
         song_name = "128_ichiyamonogatari_expert.txt"
-        song = SongInfo(song_name, device)
+        song = SongInfo(song_name, screen)
         song.init_score()
         song.init_timestamped_actions()
 
-    elif cmd[0] in ["p", "P", "play", "Play"]:
-        song.start_auto_play()
+    elif cmd[0] in ["o"]:
+        song.write_to_file()
 
     elif cmd[0] in ["d", "D", "delay", "Delay"]:
         entered_delay = input("Enter delay:")
@@ -48,9 +48,6 @@ while True:
 
     elif cmd[0] in ["ad", "AD", "autodelay", "AutoDelay"]:
         in_game_delay = input("Enter the delay info showed in the game:")
-        pass
-
-    elif cmd[0] in ["c", "C", "cycle", "Cycle"]:
         pass
 
     elif cmd[0] in ["q", "Q", "quit", "Quit"]:
