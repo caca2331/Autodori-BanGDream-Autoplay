@@ -10,7 +10,7 @@ randomTimeDelay = False  # whether there should be extra time delay for actions
 
 class ScreenInfo:
     def __init__(self, w=None, h=None):
-        self.w, self.h = ScreenInfo.get_resolution() if w is None else (w, h)
+        self.w, self.h = 1000, 1000 if w is None else (w, h)
 
         # data from iPhone8, with resolution of 1136 * 640
         self.track_loc = [
@@ -35,28 +35,6 @@ class ScreenInfo:
         self.layer4_perform_rdy_loc = 0
         self.layer5_score_confirm_loc = 0
         self.layer6_rank_up_loc = 0
-
-    @staticmethod
-    def get_resolution(deviceType="default"):
-        def get_android_resolution():
-            sp = subprocess.Popen(["./adb", "shell", "wm", "size"], stdout=subprocess.PIPE)
-            sp.wait()
-
-            info = str(sp.stdout.readline()).split()[2]
-            if "\\n" in info:
-                info = info[:len(info) - 3]
-            x_loc = info.index("x")
-            return int(info[:x_loc]), int(info[x_loc + 1:])
-
-        def get_ios_resolution():
-            pass
-
-        def get_debug_resolution():
-            return 1000, 1000
-
-        return get_ios_resolution() if deviceType == "i" \
-            else get_android_resolution() if deviceType == "a" \
-            else get_debug_resolution()
 
 
 class ImgProcess:

@@ -313,14 +313,6 @@ class SongInfo:
         with open('build/' + name + '.json', 'w') as f:
             json.dump(self.timed_actions, f)
 
-    def start_auto_play(self):
-        begin = time.time()
-        for time_offset, command in self.timed_actions:
-            print(time_offset, command, time.ctime())
-            if time.time() < time_offset + begin:
-                time.sleep(time_offset + begin - time.time())
-            run_cmd(["./adb", "shell"] + command)
-
     @staticmethod
     def gen_timed_actions(song_name, w, h, player_lv):
         song = SongInfo(song_name, ScreenInfo(w, h), player_lv)

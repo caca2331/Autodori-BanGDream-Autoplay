@@ -11,3 +11,4 @@ adb
 sendmoreevent.c
 build
 AutoTouch
+src/adb
