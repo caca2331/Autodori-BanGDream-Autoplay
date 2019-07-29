@@ -20,8 +20,9 @@ class SongInfo:
 
     IN_AIR_DUR = 0.08  # min time for a finger to stay in air between two touches
 
-    def __init__(self, song_name=None, screen_info=None, player_lv=10):
+    def __init__(self, song_name=None, screen_info=None, player_lv=None, sampling_freq=None):
         self.song_name = song_name
+        self.sampling_freq = int(sampling_freq) if sampling_freq else 0.005
         self.screen_info = screen_info
         # self.global_delay = global_delay
 
@@ -29,7 +30,7 @@ class SongInfo:
         # 20 will be very good player,
         # 25 will be top 10 player,
         # 30+ will be suspicious (risky!)
-        self.player_lv = player_lv
+        self.player_lv = int(player_lv) if player_lv else 10
 
         # if actual_song_lv_in_the_game <= 20, difficulty = 0
         # else difficulty = actual_song_lv_in_the_game - 20
@@ -66,7 +67,7 @@ class SongInfo:
             'id': '#WAV01 bgm(\\d*).wav',
         }
 
-        file_object = open('score/' + self.song_name + '.txt', 'rU')
+        file_object = open('score/' + self.song_name + '.txt', 'r')
 
         read_step = 0
         try:
@@ -305,23 +306,48 @@ class SongInfo:
             finger[finger_to_use] = start_time + ttl_dur
 
     # write timestamped commands to a json file.
-    # format: [ [time_in_sec, finger_id, x1, y1, x2, y2, duration_in_sec,
+    # format 1: [ [time_in_sec, finger_id, x1, y1, x2, y2, duration_in_sec,
     #            is_start_with_finger_attached(1 or 0), is_end_with_finger_attached(1 or 0)] ... ]
+    # format 2: [ [time_in_sec, finger_id, x, y, finger_attaching/moving/leaving(0/1/2)], ... ]
     def write_to_file(self, name=None):
         if name is None:
             name = self.song_name + '-timed_actions'
         with open('build/' + name + '.json', 'w') as f:
             json.dump(self.timed_actions, f)
 
+    def transform_timed_actions_type(self, timed_actions_type=None):
+        if timed_actions_type == 1:
+            transformed_timed_actions = []
+
+            for s_time, f_id, x1, y1, x2, y2, dur, is_s_attached, is_e_attached in self.timed_actions:
+
+                transformed_timed_actions.append([s_time, f_id, x1, y1, 0])
+
+                time_sep = dur / self.sampling_freq
+
+                while time_sep > 1:
+                    s_time += self.sampling_freq
+                    time_sep -= 1
+                    transformed_timed_actions.append([s_time, f_id, x1, y1, 1])
+
+                s_time += time_sep * self.sampling_freq
+                transformed_timed_actions.append([s_time, f_id, x2, y2, 1])
+                transformed_timed_actions.append([s_time, f_id, x2, y2, 2])
+
+            list.sort(transformed_timed_actions)
+            self.timed_actions = transformed_timed_actions
+
+
     @staticmethod
-    def gen_timed_actions(song_name, w, h, player_lv):
-        song = SongInfo(song_name, ScreenInfo(w, h), player_lv)
+    def gen_timed_actions(song_name, w=None, h=None, player_lv=None, filename=None, timed_actions_type=0,
+                          sampling_freq=None):
+        song = SongInfo(song_name, ScreenInfo(w, h), player_lv, sampling_freq)
+        song.init_score()
+        song.init_timed_actions()
+        song.transform_timed_actions_type(int(timed_actions_type))
+        song.write_to_file(filename)
 
 
 if __name__ == "__main__":
     print("Usage: song_name, [screen width] [screen height] [player_lv]")
-    SongInfo.gen_timed_actions(argv[1],
-                               argv[2] if len(argv) > 1 else None,
-                               argv[3] if len(argv) > 2 else None,
-                               argv[4] if len(argv) > 3 else None
-                               )
+    SongInfo.gen_timed_actions(*argv[1:])

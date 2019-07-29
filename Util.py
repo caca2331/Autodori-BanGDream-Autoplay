@@ -10,7 +10,7 @@ randomTimeDelay = False  # whether there should be extra time delay for actions
 
 class ScreenInfo:
     def __init__(self, w=None, h=None):
-        self.w, self.h = 1000, 1000 if w is None else (w, h)
+        self.w, self.h = (1000, 1000) if w is None else (int(w), int(h))
 
         # data from iPhone8, with resolution of 1136 * 640
         self.track_loc = [
