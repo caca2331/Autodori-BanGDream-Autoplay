@@ -21,6 +21,13 @@ def get_resolution():
     return int(info[:x_loc]), int(info[x_loc + 1:])
 
 
+# while in multi-player mode,
+# Wait till when window "waiting other player" of disappear,
+# return True.
+def wait_till_ready():
+    pass
+
+
 usage = "Usage:\n" \
         "Help        help, show this page\n" \
         "Set         manually set song name that will be played next\n" \
@@ -31,44 +38,45 @@ usage = "Usage:\n" \
         "Cycle       (after set a song) Fully automated, plays the song for cycle of times.\n" \
         "Quit        quit program\n"
 
-screen = ScreenInfo()
+if __name__ == '__main__':
+    screen = ScreenInfo()
 
-print(usage)
-global_delay = 0
-lv = 10
-song = SongInfo()
+    print(usage)
+    global_delay = 0
+    lv = 10
+    song = SongInfo()
 
-while True:
-    cmd = input("Enter your command (initial is OK): ")
-    print(cmd)
-    if len(cmd) == 0:
-        continue
-    elif cmd[0] in ["h", "H", "help", "Help"]:
-        print(usage)
+    while True:
+        cmd = input("Enter your command (initial is OK): ")
+        print(cmd)
+        if len(cmd) == 0:
+            continue
+        elif cmd[0] in ["h", "H", "help", "Help"]:
+            print(usage)
 
-    elif cmd[0] in ["s", "S", "set", "Set"]:
-        # song_name = input("Enter song name:")
-        song_name = "128_ichiyamonogatari_expert.txt"
-        song = SongInfo(song_name, screen)
-        song.init_score()
-        song.init_timed_actions()
+        elif cmd[0] in ["s", "S", "set", "Set"]:
+            # song_name = input("Enter song name:")
+            song_name = "128_ichiyamonogatari_expert.txt"
+            song = SongInfo(song_name, screen)
+            song.init_score()
+            song.init_timed_actions()
 
-    elif cmd[0] in ["o"]:
-        song.write_to_file()
+        elif cmd[0] in ["o"]:
+            song.write_to_file()
 
-    elif cmd[0] in ["d", "D", "delay", "Delay"]:
-        entered_delay = input("Enter delay:")
-        song.global_delay = int(entered_delay)
+        elif cmd[0] in ["d", "D", "delay", "Delay"]:
+            entered_delay = input("Enter delay:")
+            song.global_delay = int(entered_delay)
 
-    elif cmd[0] in ["ad", "AD", "autodelay", "AutoDelay"]:
-        in_game_delay = input("Enter the delay info showed in the game:")
-        pass
+        elif cmd[0] in ["ad", "AD", "autodelay", "AutoDelay"]:
+            in_game_delay = input("Enter the delay info showed in the game:")
+            pass
 
-    elif cmd[0] in ["q", "Q", "quit", "Quit"]:
-        break
+        elif cmd[0] in ["q", "Q", "quit", "Quit"]:
+            break
 
-    else:
-        print("else")
-        print(song.timed_actions)
-        for temp in song.timed_actions:
-            print(temp)
+        else:
+            print("else")
+            print(song.timed_actions)
+            for temp in song.timed_actions:
+                print(temp)

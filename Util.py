@@ -12,7 +12,8 @@ class ScreenInfo:
     def __init__(self, w=None, h=None):
         self.w, self.h = (1000, 1000) if w is None else (int(w), int(h))
 
-        # data from iPhone8, with resolution of 1136 * 640
+        # Goal: find a common ratio for all devices.
+        # data from iPhone8, with screenshot resolution of 1136 * 640 (Note: not screen resolution)
         self.track_loc = [
             None,
             (self.w * 240.7 / 1136.0, self.h * 505 / 640.0, self.w * 370.7 / 1136.0, self.h * 545 / 640.0),

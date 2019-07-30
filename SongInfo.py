@@ -20,9 +20,12 @@ class SongInfo:
 
     IN_AIR_DUR = 0.08  # min time for a finger to stay in air between two touches
 
-    def __init__(self, song_name=None, screen_info=None, player_lv=None, sampling_freq=None):
+    def __init__(self, song_name=None, screen_info=None, player_lv=None, sampling_period=None):
         self.song_name = song_name
-        self.sampling_freq = int(sampling_freq) if sampling_freq else 0.005
+
+        # by iOS default it should be 60Hz (except iPad pro of 120Hz)
+        self.sampling_period = float(sampling_period) if sampling_period else 1.0 / 60
+
         self.screen_info = screen_info
         # self.global_delay = global_delay
 
@@ -323,25 +326,27 @@ class SongInfo:
 
                 transformed_timed_actions.append([s_time, f_id, x1, y1, 0])
 
-                time_sep = dur / self.sampling_freq
+                time_sep = dur / self.sampling_period
+                dx, dy = (x2 - x1) / time_sep, (y2 - y1) / time_sep
 
                 while time_sep > 1:
-                    s_time += self.sampling_freq
+                    s_time += self.sampling_period
+                    x1 += dx
+                    y1 += dy
                     time_sep -= 1
                     transformed_timed_actions.append([s_time, f_id, x1, y1, 1])
 
-                s_time += time_sep * self.sampling_freq
+                s_time += time_sep * self.sampling_period
                 transformed_timed_actions.append([s_time, f_id, x2, y2, 1])
                 transformed_timed_actions.append([s_time, f_id, x2, y2, 2])
 
             list.sort(transformed_timed_actions)
             self.timed_actions = transformed_timed_actions
 
-
     @staticmethod
     def gen_timed_actions(song_name, w=None, h=None, player_lv=None, filename=None, timed_actions_type=0,
-                          sampling_freq=None):
-        song = SongInfo(song_name, ScreenInfo(w, h), player_lv, sampling_freq)
+                          sampling_period=None):
+        song = SongInfo(song_name, ScreenInfo(w, h), player_lv, sampling_period)
         song.init_score()
         song.init_timed_actions()
         song.transform_timed_actions_type(int(timed_actions_type))
