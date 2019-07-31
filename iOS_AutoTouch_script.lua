@@ -1,6 +1,3 @@
-sampling_period = 1 / 60 -- sampling period of screen, used to calucuate # of move event generated. In seconds.
-
-
 function move_to(x1, y1, x2, y2, dur, start_released, end_released)
     if start_released == 0 then touchDown(x1, y1) end
     usleep(dur * 1000000) -- in microseconds
@@ -11,26 +8,6 @@ end
 function print_actions(actions)
     for i = 1, #actions, 5 do
         print(actions[i], actions[i + 1], actions[i + 2], actions[i + 3], actions[i + 4])
-    end
-end
-
-function wait_cover_disappear()
-    while 1 do
-
-        if 1 then
-            break
-        end
-        usleep(500)
-    end
-end
-
-function wait_till_all_rdy()
-    while 1 do
-
-        if 1 then
-            break
-        end
-        usleep(500)
     end
 end
 
@@ -98,7 +75,7 @@ function init_key_pixels()
 end
 
 -- simulates button press on the UI
-function btn_press(btn)
+function btn_press(btn, without_delay)
     local function centered_loc(xx1, xx2)
         return (xx1 + xx2) / 2 + (xx1 - xx2) / 2 * (math.random() * 0.9 - 0.45)
     end
@@ -120,46 +97,102 @@ function btn_press(btn)
     end
     touchMove(0, x, y)
     touchUp(0, x, y)
+
+    if not without_delay then usleep(2000000) end
 end
 
 -- return whether the sceen is the sceen we want
-function check_sceen_match(sceen, wait) while 1 do
+function check_sceen_match(sceen, wait, press) while 1 do
     local actual_colors = getColors(key_pixels[sceen])
     local wanted_colors = key_pixels_color[sceen]
     local is_match = 1
 
     for i = 1, #wanted_coloes do
         if actual_colors[i] == wanted_colors[i] then
-            is_match = 0
+            is_match = nil
             break
         end
     end
 
+    if is_match and press then btn_press(sceen) end -- press button after match
+
     if is_match or not wait then return is_match end
     usleep(10000)
-end end
+end
+end
 
+function init_sampling_period()
+    if w == 2224 or w == 2732 then
+        return 1 / 120
+    else
+        return 1 / 60
+    end
+end
+
+function recogize_album()
+    return
+end
 
 w, h = getScreenResolution()
+sampling_period = init_sampling_period()  -- sampling period of screen, used to calucuate # of move event generated. In seconds.
 btns = init_btns()
 key_pixels, key_pixels_color = init_key_pixels()
 
-is_random_song, is_multi_mode, remaining_loop = 0, 0, 1;
+is_random_song, is_multi_mode, remaining_loop = nil, nil, 1;
+lv, difficulty = 10, 0;
 
 math.randomseed(os.time())
 
 file = 'build/test.json'
 actions = prepare_song(file)
 
--- TODO low prompt for instruction cycle
+-- TODO (low) prompt for instruction cycle
+
+-- TODO adjust delay
+--    if check_sceen_match('delay') then
+--    end
 
 -- autoplay cycle
 while (remaining_loop > 0.1) do
-    remaining_loop = remaining_loop - 1
-    check_sceen_match('live')
-2
-    btn_press('live')
+    local function press_difficulty()
+        --        check_sceen_match('difficulty', 'wait')
+        if difficulty == 0 then btn_press('easy')
+        elseif difficulty == 1 then btn_press('normal')
+        elseif difficulty == 2 then btn_press('hard')
+        elseif difficulty == 3 then btn_press('expert')
+        elseif difficulty == 4 then btn_press('special')
+        end
+    end
+
+    local function next_song()
+        --            check_sceen_match('confirm', 'wait')
+    end
+
+    local function wait_till_album_disappear() while 1 do
+        if 1 then
+            break
+        end
+        usleep(500)
+    end
+    end
+
+    local function wait_till_other_players_rdy()
+    end
+
+    local function claim_reward()
+    end
+
+
+    --    remaining_loop = remaining_loop - 1
+    --
+    --    check_sceen_match('live', 'wait', 'press')
+    --
+    --    if is_multi_mode then
+    --    else
+    --        check_sceen_match('song_choosing', 'wait')
+    --        btn_press('confirm_song')
+    --        check_sceen_match('live_start', 'wait', 'press')
+    wait_till_album_disappear()
+    play()
+    --    end
 end
-
-
-
