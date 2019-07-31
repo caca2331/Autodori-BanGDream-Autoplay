@@ -1,3 +1,5 @@
+socket = require("socket")
+
 function move_to(x1, y1, x2, y2, dur, start_released, end_released)
     if start_released == 0 then touchDown(x1, y1) end
     usleep(dur * 1000000) -- in microseconds
@@ -13,9 +15,9 @@ end
 
 function play(actions)
     -- get time somehow & manage
-    local start_time = 0 -- TODO
+    local start_time = socket.gettime() -- TODO
     for i = 1, #actions, 5 do
-        while time --[[ TODO ]] < start_time + actions[i] do usleep(500) end
+        while socket.gettime() < start_time + actions[i] * 1000000 do usleep(500) end
         if actions[i + 4] == 0 then
             touchDown(actions[i + 1], actions[i + 2], actions[i + 3])
         elseif actions[i + 4] == 1 then
@@ -123,9 +125,9 @@ end
 
 function init_sampling_period()
     if w == 2224 or w == 2732 then
-        return 1 / 120
+        return 1 / 120  -- sampling period for iPad Pros are 1 / 120
     else
-        return 1 / 60
+        return 1 / 60   -- for other devices, 1 / 60
     end
 end
 
@@ -133,7 +135,8 @@ function recogize_album()
     return
 end
 
-w, h = getScreenResolution()
+--w, h = getScreenResolution()
+w, h = 2224, 1668
 sampling_period = init_sampling_period()  -- sampling period of screen, used to calucuate # of move event generated. In seconds.
 btns = init_btns()
 key_pixels, key_pixels_color = init_key_pixels()
@@ -143,7 +146,8 @@ lv, difficulty = 10, 0;
 
 math.randomseed(os.time())
 
-file = 'build/test.json'
+file = '/var/mobile/Library/AutoTouch/Scripts/build/testout.json'
+--file = 'build/testout.json'
 actions = prepare_song(file)
 
 -- TODO (low) prompt for instruction cycle
@@ -193,6 +197,6 @@ while (remaining_loop > 0.1) do
     --        btn_press('confirm_song')
     --        check_sceen_match('live_start', 'wait', 'press')
     wait_till_album_disappear()
-    play()
+    play(actions)
     --    end
 end

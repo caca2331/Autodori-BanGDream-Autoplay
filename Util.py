@@ -26,6 +26,19 @@ class ScreenInfo:
             (self.w * 894.0 / 1136.0, self.h * 505 / 640.0, self.w * 1024 / 1136.0, self.h * 545 / 640.0),
         ]
 
+        # iPad Pro samples, of 2224 * 1668
+        self.track_loc = [
+            None,
+            (self.w * 215 / 2224.0, self.h * 1200 / 1668.0, self.w * 469 / 2224.0, self.h * 1270 / 1668.0),
+            (self.w * 470 / 2224.0, self.h * 1200 / 1668.0, self.w * 724 / 2224.0, self.h * 1270 / 1668.0),
+            (self.w * 726 / 2224.0, self.h * 1200 / 1668.0, self.w * 980 / 2224.0, self.h * 1270 / 1668.0),
+            (self.w * 982 / 2224.0, self.h * 1200 / 1668.0, self.w * 1236 / 2224.0, self.h * 1270 / 1668.0),
+            (self.w * 1237 / 2224.0, self.h * 1200 / 1668.0, self.w * 1491 / 2224.0, self.h * 1270 / 1668.0),
+            (self.w * 1492 / 2224.0, self.h * 1200 / 1668.0, self.w * 1746 / 2224.0, self.h * 1270 / 1668.0),
+            None,
+            (self.w * 1748 / 2224.0, self.h * 1200 / 1668.0, self.w * 2006 / 2224.0, self.h * 1270 / 1668.0),
+        ]
+
         self.layer1_perform_loc = 0
         self.layer2_free_live_loc = 0
         self.layer2_1_multilive_loc = 0
