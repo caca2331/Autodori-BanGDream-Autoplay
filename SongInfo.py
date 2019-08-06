@@ -20,7 +20,7 @@ class SongInfo:
 
     IN_AIR_DUR = 0.08  # min time for a finger to stay in air between two touches
 
-    def __init__(self, song_name=None, screen_info=None, player_lv=None, sampling_period=None):
+    def __init__(self, song_name, screen_info=None, player_lv=None, sampling_period=None):
         self.song_name = song_name
 
         # by iOS default it should be 60Hz (except iPad pro of 120Hz)
@@ -344,7 +344,7 @@ class SongInfo:
             self.timed_actions = transformed_timed_actions
 
     @staticmethod
-    def gen_timed_actions(song_name, w=None, h=None, player_lv=None, filename=None, timed_actions_type=0,
+    def gen_timed_actions(song_name, w, h, player_lv=None, filename=None, timed_actions_type=0,
                           sampling_period=None):
         song = SongInfo(song_name, ScreenInfo(w, h), player_lv, sampling_period)
         song.init_score()
@@ -354,5 +354,7 @@ class SongInfo:
 
 
 if __name__ == "__main__":
-    print("Usage: song_name, [screen width] [screen height] [player_lv]")
+    print("Usage: song_name, [screen width] [screen height] [player_lv]"
+          "song_name is the name of the score file in score directory, without the suffix of '.txt'"
+          "screen width")
     SongInfo.gen_timed_actions(*argv[1:])
