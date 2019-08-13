@@ -1,11 +1,7 @@
 socket = require("socket")
 
-function move_to(x1, y1, x2, y2, dur, start_released, end_released)
-    if start_released == 0 then touchDown(x1, y1) end
-    usleep(dur * 1000000) -- in microseconds
-    move_to(x2, y2)
-    if end_released == 1 then touchUp(x2, y2) end
-end
+
+--[[ ********** #MARK debugging ********** ]]
 
 function print_actions(actions)
     for i = 1, #actions, 5 do
@@ -13,30 +9,8 @@ function print_actions(actions)
     end
 end
 
-function play(actions)
-    -- get time somehow & manage
-    local start_time = socket.gettime() -- TODO
-    for i = 1, #actions, 5 do
-        while socket.gettime() < start_time + actions[i] * 1000000 do usleep(500) end
-        if actions[i + 4] == 0 then
-            touchDown(actions[i + 1], actions[i + 2], actions[i + 3])
-        elseif actions[i + 4] == 1 then
-            touchMove(actions[i + 1], actions[i + 2], actions[i + 3])
-        else
-            touchUp(actions[i + 1], actions[i + 2], actions[i + 3])
-        end
-    end
-end
 
-function prepare_song(file)
-    local actions = {}
-    for line in io.lines(file) do
-        for str in string.gmatch(line, "[^%s,%[%]]+") do
-            actions[#actions + 1] = tonumber(str)
-        end
-    end
-    return actions
-end
+--[[ ********** #MARK initialization ********** ]]
 
 -- init locations for buttons in the UI
 function init_btns()
@@ -76,6 +50,25 @@ function init_key_pixels()
     end
 end
 
+-- init sampling period based on the device
+function init_sampling_period()
+    if w == 2224 or w == 2732 then
+        return 1 / 120 -- sampling period for iPad Pros are 1 / 120
+    else
+        return 1 / 60 -- for other devices, 1 / 60
+    end
+end
+
+
+--[[ ********** #MARK basic utils ********** ]]
+
+function move_to(x1, y1, x2, y2, dur, start_released, end_released)
+    if start_released == 0 then touchDown(x1, y1) end
+    usleep(dur * 1000000) -- in microseconds
+    move_to(x2, y2)
+    if end_released == 1 then touchUp(x2, y2) end
+end
+
 -- simulates button press on the UI
 function btn_press(btn, without_delay)
     local function centered_loc(xx1, xx2)
@@ -103,6 +96,37 @@ function btn_press(btn, without_delay)
     if not without_delay then usleep(2000000) end
 end
 
+
+--[[ ********** #MARK song playing ********** ]]
+
+function prepare_song(file)
+    local actions = {}
+    for line in io.lines(file) do
+        for str in string.gmatch(line, "[^%s,%[%]]+") do
+            actions[#actions + 1] = tonumber(str)
+        end
+    end
+    return actions
+end
+
+function play(actions)
+    -- get time somehow & manage
+    local start_time = socket.gettime() -- TODO
+    for i = 1, #actions, 5 do
+        while socket.gettime() < start_time + actions[i] * 1000000 do usleep(500) end
+        if actions[i + 4] == 0 then
+            touchDown(actions[i + 1], actions[i + 2], actions[i + 3])
+        elseif actions[i + 4] == 1 then
+            touchMove(actions[i + 1], actions[i + 2], actions[i + 3])
+        else
+            touchUp(actions[i + 1], actions[i + 2], actions[i + 3])
+        end
+    end
+end
+
+
+--[[ ********** #MARK image recongition ********** ]]
+
 -- return whether the sceen is the sceen we want
 function check_sceen_match(sceen, wait, press) while 1 do
     local actual_colors = getColors(key_pixels[sceen])
@@ -123,28 +147,26 @@ function check_sceen_match(sceen, wait, press) while 1 do
 end
 end
 
-function init_sampling_period()
-    if w == 2224 or w == 2732 then
-        return 1 / 120  -- sampling period for iPad Pros are 1 / 120
-    else
-        return 1 / 60   -- for other devices, 1 / 60
-    end
-end
 
 function recogize_album()
     return
 end
 
---w, h = getScreenResolution()
-w, h = 2224, 1668
-sampling_period = init_sampling_period()  -- sampling period of screen, used to calucuate # of move event generated. In seconds.
+
+
+--[[ ********** #MARK main ********** ]]
+
+w, h = getScreenResolution()
+sampling_period = init_sampling_period() -- sampling period of screen, used to calucuate # of move event generated. In seconds.
 btns = init_btns()
 key_pixels, key_pixels_color = init_key_pixels()
+
+math.randomseed(os.time())
 
 is_random_song, is_multi_mode, remaining_loop = nil, nil, 1;
 lv, difficulty = 10, 0;
 
-math.randomseed(os.time())
+
 
 file = '/var/mobile/Library/AutoTouch/Scripts/build/testout.json'
 --file = 'build/testout.json'
