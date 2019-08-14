@@ -8,7 +8,7 @@ from Util import *
 #
 # This file process the song data
 #
-# Useless knowledge:
+#
 #
 
 
