@@ -147,9 +147,31 @@ function check_sceen_match(sceen, wait, press) while 1 do
 end
 end
 
-
+-- recognize which album it is. Return the song name.
 function recogize_album()
+    if (is_multimode) then end
     return
+end
+
+function dectect_difficulty()
+end
+
+-- return when ready to play
+function wait_until_album_disappear() while 1 do
+    if 1 then
+        break
+    end
+    usleep(500)
+end
+end
+
+-- return when ready to play
+function wait_until_other_players_rdy() while 1 do
+    if 1 then
+        break
+    end
+    usleep(500)
+end
 end
 
 
@@ -164,7 +186,7 @@ key_pixels, key_pixels_color = init_key_pixels()
 math.randomseed(os.time())
 
 is_random_song, is_multi_mode, remaining_loop = nil, nil, 1;
-lv, difficulty = 10, 0;
+lv = 10;
 
 
 
@@ -180,30 +202,6 @@ actions = prepare_song(file)
 
 -- autoplay cycle
 while (remaining_loop > 0.1) do
-    local function press_difficulty()
-        --        check_sceen_match('difficulty', 'wait')
-        if difficulty == 0 then btn_press('easy')
-        elseif difficulty == 1 then btn_press('normal')
-        elseif difficulty == 2 then btn_press('hard')
-        elseif difficulty == 3 then btn_press('expert')
-        elseif difficulty == 4 then btn_press('special')
-        end
-    end
-
-    local function next_song()
-        --            check_sceen_match('confirm', 'wait')
-    end
-
-    local function wait_till_album_disappear() while 1 do
-        if 1 then
-            break
-        end
-        usleep(500)
-    end
-    end
-
-    local function wait_till_other_players_rdy()
-    end
 
     local function claim_reward()
     end
