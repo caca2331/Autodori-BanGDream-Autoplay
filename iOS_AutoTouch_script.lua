@@ -1,6 +1,33 @@
 socket = require("socket")
 
 
+--[[ ********** #MARK global variables ********** ]]
+
+-- paths
+score_path = "/var/mobile/Library/AutoTouch/Scripts/"
+intepreted_score_path = "/var/mobile/Library/AutoTouch/Scripts/"
+actions_path = "/var/mobile/Library/AutoTouch/Scripts/"
+-- config
+is_random_song = nil
+is_multi_mode = nil
+remaining_loop = nil
+lv = nil
+
+-- width and height of the screen
+w = nil
+h = nil
+-- '4:3' or '16:9'
+device_type = nil
+-- sampling period of screen, used to calucuate # of move event generated. In seconds.
+sampling_period = nil
+-- key: name of the specific area; value: x,y of the top left corner and bottom-right corner
+btns = nil
+-- { name_of_area:{{x,y,color}, ...  }, ...}
+key_pixels = nil
+-- touch actions to be performed
+actions = nil
+
+
 --[[ ********** #MARK debugging ********** ]]
 
 function print_actions(actions)
@@ -9,22 +36,47 @@ function print_actions(actions)
     end
 end
 
+-- get color of pixels in the given area
+function get_color(area_to_check)
+    for i in 0, 100 do
+
+        log() --todo
+    end
+end
 
 --[[ ********** #MARK initialization ********** ]]
 
+-- identify which device it is
+function init_device_type()
+    if w == 2224 or w == 2732 or w == 2048 then
+        return '4:3'
+    elseif 1 then
+        return '16:9'
+    end
+end
+
+-- init sampling period based on the device
+function init_sampling_period()
+    if w == 2224 or w == 2732 then
+        return 1 / 120 -- sampling period for iPad Pros are 1 / 120
+    else
+        return 1 / 60 -- for other devices, 1 / 60
+    end
+end
+
 -- init locations for buttons in the UI
 function init_btns()
-    if 1 --[[ TODO ratio of ipad]] then
-        local iPad_pixels = {
+    if device_type == '4:3' then
+        local iPad_btns = {
             live = { 1, 2, 3, 4 },
             easy = { 1, 1, 5, 5 }
         }
-        local w_r, h_r = -1, -1 --TODO
+        local w_r, h_r = w / 2224, h / 1668
 
-        for k, v in pairs(iPad_pixels) do
-            iPad_pixels[k] = { v[1] * w_r, v[2] * h_r, v[3] * w_r, v[4] * h_r }
+        for k, v in pairs(iPad_btns) do
+            iPad_btns[k] = { v[1] * w_r, v[2] * h_r, v[3] * w_r, v[4] * h_r }
         end
-        return iPad_pixels
+        return iPad_btns
     end
 end
 
@@ -50,16 +102,6 @@ function init_key_pixels()
     end
 end
 
--- init sampling period based on the device
-function init_sampling_period()
-    if w == 2224 or w == 2732 then
-        return 1 / 120 -- sampling period for iPad Pros are 1 / 120
-    else
-        return 1 / 60 -- for other devices, 1 / 60
-    end
-end
-
-
 --[[ ********** #MARK basic utils ********** ]]
 
 function move_to(x1, y1, x2, y2, dur, start_released, end_released)
@@ -69,18 +111,23 @@ function move_to(x1, y1, x2, y2, dur, start_released, end_released)
     if end_released == 1 then touchUp(x2, y2) end
 end
 
--- simulates button press on the UI
-function btn_press(btn, without_delay)
+function rand_loc(btn)
     local function centered_loc(xx1, xx2)
         return (xx1 + xx2) / 2 + (xx1 - xx2) / 2 * (math.random() * 0.9 - 0.45)
     end
+
+    local x1, y1, x2, y2 = btns[btn][1], btns[btn][2], btns[btn][3], btns[btn][4]
+    return centered_loc(x1, x2), centered_loc(y1, y2)
+end
+
+-- simulates button press on the UI
+function btn_press(btn, without_delay)
 
     local function rand_time_in_us()
         return (1 + math.random() * 5) * 0.5 * 1000000
     end
 
-    local x1, y1, x2, y2 = btns[btn][1], btns[btn][2], btns[btn][3], btns[btn][4]
-    local x, y = centered_loc(x1, x2), centered_loc(y1, y2)
+    local x, y = rand_loc(btn)
     touchDown(0, x, y)
 
     local time_sep = rand_time_in_us() / sampling_period
@@ -128,6 +175,7 @@ end
 --[[ ********** #MARK image recongition ********** ]]
 
 -- return whether the sceen is the sceen we want
+-- todo: allow some error
 function check_sceen_match(sceen, wait, press) while 1 do
     local actual_colors = getColors(key_pixels[sceen])
     local wanted_colors = key_pixels_color[sceen]
@@ -149,7 +197,7 @@ end
 
 -- recognize which album it is. Return the song name.
 function recogize_album()
-    if (is_multimode) then end
+    if is_multimode then end
     return
 end
 
@@ -177,9 +225,11 @@ end
 
 
 --[[ ********** #MARK main ********** ]]
-
 w, h = getScreenResolution()
+
+device_type = init_device_type() -- '4:3' or '16:9'
 sampling_period = init_sampling_period() -- sampling period of screen, used to calucuate # of move event generated. In seconds.
+
 btns = init_btns()
 key_pixels, key_pixels_color = init_key_pixels()
 
@@ -188,10 +238,7 @@ math.randomseed(os.time())
 is_random_song, is_multi_mode, remaining_loop = nil, nil, 1;
 lv = 10;
 
-
-
 file = '/var/mobile/Library/AutoTouch/Scripts/build/testout.json'
---file = 'build/testout.json'
 actions = prepare_song(file)
 
 -- TODO (low) prompt for instruction cycle
@@ -201,13 +248,15 @@ actions = prepare_song(file)
 --    end
 
 -- autoplay cycle
-while (remaining_loop > 0.1) do
+while remaining_loop > 0 do
 
     local function claim_reward()
     end
 
 
-    --    remaining_loop = remaining_loop - 1
+    remaining_loop = remaining_loop - 1
+
+
     --
     --    check_sceen_match('live', 'wait', 'press')
     --
@@ -216,7 +265,7 @@ while (remaining_loop > 0.1) do
     --        check_sceen_match('song_choosing', 'wait')
     --        btn_press('confirm_song')
     --        check_sceen_match('live_start', 'wait', 'press')
-    wait_till_album_disappear()
+    wait_until_album_disappear()
     play(actions)
     --    end
 end
