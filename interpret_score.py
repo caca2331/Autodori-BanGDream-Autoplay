@@ -25,7 +25,7 @@ Note:
 Output is sorted in timeOfAction.
 
 Usage as a individual call:
-[file_name]
+python3 interpret_score.py [file_name]
 """
 
 import re
@@ -46,12 +46,11 @@ def interpret_score(score_name, print_result=False):
             'bpm': '#BPM (\\d*)',
             'id': '#WAV01 bgm(\\d*).wav',
         }
-
         file_object = open('score/' + score_name + '.txt', 'r')
-
         read_step = 0
         try:
             for line in file_object:
+
                 if read_step == 0:
                     # get music info
                     for key_word in music_info_key_word:
@@ -87,7 +86,7 @@ def interpret_score(score_name, print_result=False):
 
     def interpret():
         v = [False for _temp in range(9)]  # vertical slide
-        for u in self.score:
+        for u in score:
 
             four_beat = int(u[0])
 
@@ -123,13 +122,13 @@ def interpret_score(score_name, print_result=False):
                     token += pattern[i]
 
                 # skip token if it is not recognized. otherwise re-assign its value (note_type string)
-                if token not in self.note_info:
+                if token not in note_info:
                     continue
                 else:
-                    token = self.note_info[token]
+                    token = note_info[token]
 
                 # generate time_offset and touch_loc based on current token
-                time_offset = (four_beat * 4 + i // 2 * beat_per_division) * 60.0 / int(self.music_info["bpm"])
+                time_offset = (four_beat * 4 + i // 2 * beat_per_division) * 60.0 / int(music_info["bpm"])
 
                 # vertical slide
                 if note_type == 5:
@@ -162,20 +161,21 @@ def interpret_score(score_name, print_result=False):
                         timed_actions.append([time_offset, track, 9, (5 if token in ["slide_end_flick_b"] else 6)])
                         v[8] = True
 
-        def write_to_file():
-            with open('interpreted_score/' + score_name + '_interpreted.json', 'w') as f:
-                json.dump(timed_actions, f)
+    def write_to_file():
+        with open('interpreted/' + score_name + '_interpreted.json', 'w') as f:
+            json.dump(timed_actions, f)
 
-        def print_timed_actions():
-            for action in timed_actions:
-                print(action)
+    def print_timed_actions():
+        for action in timed_actions:
+            print(action)
 
-        init_score()
-        interpret()
-        list.sort(timed_actions)
-        write_to_file()
-        if print_result:
-            print_timed_actions()
+    init_score()
+    interpret()
+    list.sort(timed_actions)
+    print_timed_actions()
+    write_to_file()
+    if print_result:
+        print_timed_actions()
 
 
 if __name__ == "__main__":
