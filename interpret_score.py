@@ -172,7 +172,6 @@ def interpret_score(score_name, print_result=False):
     init_score()
     interpret()
     list.sort(timed_actions)
-    print_timed_actions()
     write_to_file()
     if print_result:
         print_timed_actions()

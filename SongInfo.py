@@ -323,8 +323,9 @@ class SongInfo:
             transformed_timed_actions = []
 
             for s_time, f_id, x1, y1, x2, y2, dur, is_s_attached, is_e_attached in self.timed_actions:
-
-                transformed_timed_actions.append([s_time, f_id, x1, y1, 0])
+                print(s_time, f_id, x1, y1, x2, y2, dur, is_s_attached, is_e_attached)
+                if not is_s_attached:
+                    transformed_timed_actions.append([s_time, f_id, x1, y1, 0])
 
                 time_sep = dur / self.sampling_period
                 dx, dy = (x2 - x1) / time_sep, (y2 - y1) / time_sep
@@ -338,7 +339,8 @@ class SongInfo:
 
                 s_time += time_sep * self.sampling_period
                 transformed_timed_actions.append([s_time, f_id, x2, y2, 1])
-                transformed_timed_actions.append([s_time, f_id, x2, y2, 2])
+                if not is_e_attached:
+                    transformed_timed_actions.append([s_time, f_id, x2, y2, 2])
 
             list.sort(transformed_timed_actions)
             self.timed_actions = transformed_timed_actions

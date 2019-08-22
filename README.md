@@ -3,7 +3,7 @@
 Autodori converts BanGDream score file into touch events of iOS and Android. 
 The touch events are randomized from the perspective of time and location.
 
-~~Provided with the a script for iOS.~~
+~~Provided with the script for iOS.~~
 
 
 ### Requirement:
@@ -11,8 +11,7 @@ The touch events are randomized from the perspective of time and location.
 - For iOS device, need AutoTouch installed.
 
 ### Main Feature:
-
-- play a chosen song / a song chosen randomly
+- play a chosen / random song 
 - play for once / keep playing
 - in single / multi player mode
 
