@@ -102,7 +102,7 @@ def interpret_score(score_name, print_result=False):
             # 8:   right most track in the game
             track = int(u[2])
             # modified into 1-7 from left to right:
-            track = 1 if track == 6 else (7 if track == 8 else (track - 1))
+            track = 1 if track == 6 else (7 if track == 8 else (track + 1))
 
             # type of the note, and when the note falls
             pattern = u[3]

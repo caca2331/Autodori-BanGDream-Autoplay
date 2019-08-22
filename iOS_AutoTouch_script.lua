@@ -1,12 +1,10 @@
---socket = require("socket")
-
-
 --- [[ ********** #MARK global variables ********** ]]
-
+-- package required
+socket = nil
 -- paths
-score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/score"
-intepreted_score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/interpreted"
-playable_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/playable"
+score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/score/"
+interpreted_score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/interpreted/"
+playable_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/playable/"
 -- config
 is_random_miss = 1
 is_random_time = 1
@@ -57,8 +55,7 @@ function rand_loc(btn, y1, x2, y2)
     end
 
     if y1 then return centered_loc(btn, x2), centered_loc(y1, y2)
-    else print(btn)--, btns[btn][1], btns[btn][3], btns[btn][2], btns[btn][4] )
-        return centered_loc(btns[btn][1], btns[btn][3]), centered_loc(btns[btn][2], btns[btn][4])
+    else return centered_loc(btns[btn][1], btns[btn][3]), centered_loc(btns[btn][2], btns[btn][4])
     end
 end
 
@@ -132,7 +129,6 @@ function init_btns()
 
         for k, v in pairs(iPad_btns) do
             iPad_btns[k] = { v[1] * w_r, v[2] * h_r, v[3] * w_r, v[4] * h_r }
-
         end
         return iPad_btns
     end
@@ -216,7 +212,6 @@ function init_actions_from_intepreted_score(file)
         end
 
         local function gen_touch_loc(player_loc, is_flick)
-            print('player_loc',player_loc)
             if is_flick then return rand_loc(player_loc)
             else return rand_loc(player_loc + 7)
             end
@@ -337,7 +332,7 @@ function init_actions_from_intepreted_score(file)
     -- go through each interpreted_score
     while 1 do
         if (i > #interpreted) and (#temp_stack == 0) then break end
-        while (interpreted[i] + 3 * P_RANGE) < curr_time do
+        while interpreted[i] and ((interpreted[i] + 3 * P_RANGE) < curr_time) do
             table.insert(temp_stack, gen_action_info(interpreted, old_finger, i))
             i = i + 4
         end
@@ -365,10 +360,10 @@ function init_actions_from_intepreted_score(file)
                             new_finger[ii] = true
                             break
                         end
-                        if not temp_action[-1] then
-                            if is_linux_main then print('more than four fingers at same time!')
-                            else toast('more than four fingers at same time!')
-                            end
+                    end
+                    if not temp_action[-1] then
+                        if is_linux_main then print('more than four fingers at same time!')
+                        else toast('more than four fingers at same time!')
                         end
                     end
                 end
@@ -520,15 +515,16 @@ function linux_main()
     lv, difficulty = 10, 25
 
     actions = init_actions_from_intepreted_score('interpreted/yes_bang_dream_expert_interpreted.json')
-    print_actions()
+    print_actions(actions)
     os.exit(0)
 end
 
 
 
 --[[ ********** #MARK main ********** ]]
+--linux_main()
 
-linux_main()
+socket = require("socket")
 w, h = getScreenResolution()
 
 device_type = init_device_type()
@@ -540,7 +536,7 @@ key_pixels, key_pixels_color = init_key_pixels()
 math.randomseed(os.time())
 
 is_random_song, is_multi_mode, remaining_loop = nil, nil, 1
-lv = 10
+lv, difficulty = 10, 25
 
 
 -- TODO (low) prompt for instruction cycle
@@ -559,10 +555,10 @@ while remaining_loop > 0 do
     remaining_loop = remaining_loop - 1
 
     local song_name = 'yes_bang_dream'
-    local intepreted_score_path = intepreted_score_dir_path .. song_name .. 'expert' .. '.json'
+    local interpreted_score_path = interpreted_score_dir_path .. song_name .. '_expert' .. '_interpreted.json'
     local playable = '/var/mobile/Library/AutoTouch/Scripts/Autodori/playable/yes_bang_dream_expert_playable.json'
-    --    local actions = init_actions_from_intepreted_score(intepreted_score_path)
-    local actions = prepare_song(playable)
+    local actions = init_actions_from_intepreted_score(interpreted_score_path)
+--    local actions = prepare_song(playable)
     toast('ready')
 
     --    check_sceen_match('live', 'wait', 'press')
