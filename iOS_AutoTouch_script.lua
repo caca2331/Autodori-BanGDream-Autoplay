@@ -6,8 +6,11 @@ score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/score/"
 interpreted_score_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/interpreted/"
 playable_dir_path = "/var/mobile/Library/AutoTouch/Scripts/Autodori/playable/"
 -- config
-is_random_miss = 1
-is_random_time = 1
+--is_linux_debug = true
+is_random_miss = true
+is_random_time = true
+is_random_loc = true
+is_insert_interval = true
 is_random_song = nil
 is_multi_mode = nil
 remaining_loop = nil
@@ -19,11 +22,12 @@ lv = nil
 difficulty = nil
 -- constants
 F_DUR = 0.08 -- expected duration of flick
+F_PRIOR = 0.02 -- time duration to perform flick before the actual note come
 STICK_DUR = 0.05 -- expected duration of a touch on the the screen
 SLIDE_STICK_DUR = 0.08 -- min time for a finger to stay between two notes within a slide
 P_RANGE = 0.04 -- boundary that a touch is graded as perfect (in both directions), in seconds
 IN_AIR_DUR = 0.08 -- min time for a finger to stay in air between two touches
-
+START_TIME_OFFSET = 0.01
 -- width and height of the screen
 w = nil
 h = nil
@@ -51,7 +55,9 @@ end
 
 function rand_loc(btn, y1, x2, y2)
     local function centered_loc(xx1, xx2)
-        return (xx1 + xx2) / 2 + (xx1 - xx2) / 2 * (math.random() * 0.9 - 0.45)
+        if is_random_loc then return (xx1 + xx2) / 2 + (xx1 - xx2) / 2 * (math.random() * 0.9 - 0.45)
+        else return (xx1 + xx2) / 2
+        end
     end
 
     if y1 then return centered_loc(btn, x2), centered_loc(y1, y2)
@@ -107,13 +113,13 @@ end
 function init_btns()
     if device_type == '4:3' then
         local iPad_btns = {
-            { 215, 1200, 469, 1270 },
-            { 470, 1200, 724, 1270 },
-            { 726, 1200, 980, 1270 },
-            { 982, 1200, 1236, 1270 },
-            { 1237, 1200, 1491, 1270 },
-            { 1492, 1200, 1746, 1270 },
-            { 1748, 1200, 2006, 1270 },
+            { 215, 1300, 469, 1370 },
+            { 470, 1300, 724, 1370 },
+            { 726, 1300, 980, 1370 },
+            { 982, 1300, 1236, 1370 },
+            { 1237, 1300, 1491, 1370 },
+            { 1492, 1300, 1746, 1370 },
+            { 1748, 1300, 2006, 1370 },
             { 215, 1100, 469, 1170 },
             { 470, 1100, 724, 1170 },
             { 726, 1100, 980, 1170 },
@@ -167,11 +173,11 @@ function init_actions_from_intepreted_score(file)
 
         -- (40% 0-0.3 21% 0.3-0.5 19% 0.5-0.72 18% 0.72-0.95 2% 0.95-1) * p_perfect
         -- (50% 1-1.4 32% 1.4-1.7 10% 1.7-2.0 5% 2.0-2.5 3% 2.5-3.0) * p_great
-        local real_diff = math.max(0, difficulty - 20)
+        local real_diff = math.max(0, difficulty_lv - 20)
         local p_perfect = .85 + .15 * (1 - .8 ^ lv * 1.2 ^ real_diff)
         local great_miss_ratio = lv / 1.2 ^ real_diff
 
-        local function rand_time_offset()
+        local function rand_time_offset(action_type)
             local is_perfect = math.random() < p_perfect
             local is_missed = is_random_miss and (not is_perfect) and (math.random() < 1 / (great_miss_ratio + 1))
 
@@ -197,17 +203,24 @@ function init_actions_from_intepreted_score(file)
                     else score = 2.5 + 0.5 * math.random()
                     end
                 end
-                return multiplier * score
+
+                if (action_type == 2) or (action_type == 6) then return multiplier * score - F_PRIOR
+                else return multiplier * score
+                end
 
             else return 0
             end
         end
 
         local function gen_action_duration(action_type)
-            if action_type == 1 then
-                return (0.5 + math.random()) * STICK_DUR
-            elseif action_type == 2 then
-                return (0.5 + math.random()) * F_DUR
+            if is_random_time then
+                if action_type == 1 then return (0.6 + 0.8 * math.random()) * STICK_DUR
+                elseif action_type == 2 then return (0.6 + 0.8 * math.random()) * F_DUR
+                end
+            else
+                if action_type == 1 then return STICK_DUR
+                elseif action_type == 2 then return F_DUR
+                end
             end
         end
 
@@ -221,7 +234,7 @@ function init_actions_from_intepreted_score(file)
         local action_type = interpreted[i + 3]
         local f_id = interpreted[i + 2]
         local last_action = old_finger[f_id]
-        local time_offest = rand_time_offset()
+        local time_offest = rand_time_offset(action_type)
 
         local start_time, duration, end_time
         local x1, y1, x2, y2
@@ -232,8 +245,12 @@ function init_actions_from_intepreted_score(file)
             start_time = interpreted[i] + time_offest
             duration = gen_action_duration(action_type)
             end_time = start_time + duration
-            x1, y1 = gen_touch_loc(interpreted[i + 1], action_type == 2)
-            x2, y2 = rand_loc(x1 - 5, y1 - 5, x1 + 5, y1 + 5)
+            x1, y1 = gen_touch_loc(interpreted[i + 1])
+
+            if action_type == 1 then x2, y2 = rand_loc(x1 - 5, y1 - 5, x1 + 5, y1 + 5)
+            else x2, y2 = gen_touch_loc(interpreted[i + 1], true)
+            end
+
             s_attached, e_attached = false, false
 
         elseif action_type == 5 then return nil --- long bar end (ignored)
@@ -250,7 +267,7 @@ function init_actions_from_intepreted_score(file)
             end
 
             if last_action then -- appending to previous action
-                start_time = last_action[3]
+                start_time = last_action[3] + 0.00001
                 x1, y1 = last_action[6], last_action[7]
                 s_attached = true
             else -- create new action
@@ -259,24 +276,29 @@ function init_actions_from_intepreted_score(file)
                 s_attached = false
             end
 
-            if action_type == 6 then -- flick end
+            if action_type == 6 then --- flick end
                 duration = gen_action_duration(2)
                 end_time = start_time + duration
                 x2, y2 = gen_touch_loc(interpreted[i + 1], true)
                 e_attached = false
-            else -- get next non-end-action
-                local next_acion = i
+            else -- get next action
+                local next_acion = i + 4
                 while interpreted[next_acion + 2] ~= f_id do next_acion = next_acion + 4 end
-                end_time = interpreted[i] + time_offest
+                local next_action_type = interpreted[next_acion + 3]
+
+                local next_time_offset = rand_time_offset(next_action_type)
+                while not next_time_offset do next_time_offset = rand_time_offset(next_action_type) end
+                end_time = interpreted[next_acion] + next_time_offset
+
                 if start_time + SLIDE_STICK_DUR > end_time then end_time = start_time + SLIDE_STICK_DUR end
                 duration = end_time - start_time
                 x2, y2 = gen_touch_loc(interpreted[i + 1])
-                if interpreted[next_acion + 3] == 5 then e_attached = false
+                if next_action_type == 5 then e_attached = false
                 else e_attached = true
                 end
             end
         end
-
+        if is_linux_debug then print(start_time, duration, end_time, x1, y1, x2, y2, s_attached, e_attached, f_id) end -- DEBUG
         local info = { start_time, duration, end_time, x1, y1, x2, y2, s_attached, e_attached, f_id }
         info[11] = (info[6] - info[4]) / info[2] * sampling_period -- dx
         info[12] = (info[7] - info[5]) / info[2] * sampling_period -- dy
@@ -287,20 +309,30 @@ function init_actions_from_intepreted_score(file)
         return info
     end
 
-    local function insert_to_actions(actions, action_info, insertion_type)
-        table.insert(actions, action_info[1])
+    local function insert_to_actions(curr_time, actions, action_info, insertion_type)
+--        if insertion_type == 2 then table.insert(actions, action_info[3])
+--        else table.insert(actions, action_info[1])
+--        end
+        table.insert(actions, curr_time)
         table.insert(actions, action_info[-1])
         if insertion_type == 2 then
-            table.insert(actions, action_info[4])
-            table.insert(actions, action_info[5])
-        else table.insert(actions, action_info[6])
+            table.insert(actions, action_info[6])
             table.insert(actions, action_info[7])
+        else table.insert(actions, action_info[4])
+            table.insert(actions, action_info[5])
         end
+
         table.insert(actions, insertion_type)
-        action_info[1] = action_info[1] + sampling_period
-        action_info[2] = action_info[2] - sampling_period
-        action_info[4] = action_info[4] + action_info[11]
-        action_info[5] = action_info[5] + action_info[12]
+
+        if is_insert_interval then
+            action_info[1] = action_info[1] + sampling_period
+            action_info[2] = action_info[2] - sampling_period
+            action_info[4] = action_info[4] + action_info[11]
+            action_info[5] = action_info[5] + action_info[12]
+        else
+            action_info[1] = action_info[1] + 10000
+            action_info[2] = 0
+        end
     end
 
     --[[
@@ -320,7 +352,7 @@ function init_actions_from_intepreted_score(file)
     local temp_stack = {} -- allow max of four fingers at the same time
     local actions = {}
     local old_finger = {}
-    local new_finger = {}
+    local new_finger = {-10, -10, -10, -10, -10, -10}
     local curr_time = 0
     for line in io.lines(file) do
         for str in string.gmatch(line, "[^%s,%[%]]+") do
@@ -332,7 +364,7 @@ function init_actions_from_intepreted_score(file)
     -- go through each interpreted_score
     while 1 do
         if (i > #interpreted) and (#temp_stack == 0) then break end
-        while interpreted[i] and ((interpreted[i] + 3 * P_RANGE) < curr_time) do
+        while interpreted[i] and ((interpreted[i] - 3 * P_RANGE) < curr_time) do
             table.insert(temp_stack, gen_action_info(interpreted, old_finger, i))
             i = i + 4
         end
@@ -341,9 +373,13 @@ function init_actions_from_intepreted_score(file)
             --- find earliest action
             local earliest_idx = 1
             for ii = 2, #temp_stack do
-                if temp_stack[ii][1] < temp_stack[earliest_idx][1] then earliest_idx = ii end
+                if math.min(temp_stack[ii][1], temp_stack[ii][3]) <
+                        math.min(temp_stack[earliest_idx][1], temp_stack[earliest_idx][3]) then earliest_idx = ii
+                end
             end
-            if (#temp_stack == 0) or (temp_stack[earliest_idx][1] > curr_time) then break end
+
+            if #temp_stack == 0 then break end
+            if (temp_stack[earliest_idx][1] > curr_time) and (temp_stack[earliest_idx][3] > curr_time) then break end
 
             local temp_action = temp_stack[earliest_idx]
 
@@ -351,19 +387,19 @@ function init_actions_from_intepreted_score(file)
             if not temp_action[-1] then
                 if temp_action[-2] then -- if the action is continued from previous one, use previous one's new finger
                     temp_action[-1] = temp_action[-2][-1]
-                    new_finger[temp_action[-1]] = true
+                    new_finger[temp_action[-1]] = temp_action[3]
 
                 else
-                    for ii = 1, 4 do
-                        if not (new_finger[ii]) then
+                    for ii = 1, 6 do
+                        if new_finger[ii] + sampling_period < temp_action[1] then
                             temp_action[-1] = ii
-                            new_finger[ii] = true
+                            new_finger[ii] = temp_action[3]
                             break
                         end
                     end
                     if not temp_action[-1] then
-                        if is_linux_main then print('more than four fingers at same time!')
-                        else toast('more than four fingers at same time!')
+                        if is_linux_debug then print('more than six fingers at same time!')
+                        else toast('more than six fingers at same time!')
                         end
                     end
                 end
@@ -372,15 +408,16 @@ function init_actions_from_intepreted_score(file)
             --- add to actions
 
             if temp_action[8] then
-                insert_to_actions(actions, temp_action, 1) -- start with finger attached, thus move
+                if temp_action[2] < 0.0001 then -- duration is 0, stop tracking
+                    -- if no need to attach anymore, finger up
+                    if not temp_action[9] then insert_to_actions(curr_time, actions, temp_action, 2) end
+                    -- remove actiob_info from both new_finger and temp_stack
+                    table.remove(temp_stack, earliest_idx)
+                else insert_to_actions(curr_time, actions, temp_action, 1) -- start with finger attached, thus move
+                end
             else
-                insert_to_actions(actions, temp_action, 0) -- start with finger attached, thus touch down
-                temp_action[8] = false
-            end
-            if temp_action[2] < 0.001 then -- finger up; stop tracking
-                insert_to_actions(actions, temp_action, 2)
-                new_finger[temp_action[-1]] = nil
-                table.remove(temp_stack, earliest_idx)
+                insert_to_actions(curr_time, actions, temp_action, 0) -- start with finger attached, thus touch down
+                temp_action[8] = true
             end
         end
 
@@ -408,7 +445,7 @@ function play(actions)
     --[ starttime, finger_id, x, y, finger_attaching/moving/leaving(0/1/2)]
     for i = 1, #actions, 5 do
 
-        while socket.gettime() < start_time + actions[i] do usleep(500) end
+        while socket.gettime() < start_time + actions[i] do usleep(sampling_period) end
         if actions[i + 4] == 0 then
             touchDown(actions[i + 1], actions[i + 2], actions[i + 3])
         elseif actions[i + 4] == 1 then
@@ -486,7 +523,9 @@ end
 --- [[ ********** #MARK debugging ********** ]]
 function print_actions(actions)
     for i = 1, #actions, 5 do
+        --        if (actions[i] > 20.5) and (actions[i] < 24.5) then
         print(actions[i], actions[i + 1], actions[i + 2], actions[i + 3], actions[i + 4])
+        --        end
     end
 end
 
@@ -500,7 +539,6 @@ end
 
 -- debug score generation
 function linux_main()
-    is_linux_main = true
     w, h = 2224, 1668
 
     device_type = init_device_type()
@@ -512,7 +550,7 @@ function linux_main()
     math.randomseed(os.time())
 
     is_random_song, is_multi_mode, remaining_loop = nil, nil, 1;
-    lv, difficulty = 10, 25
+    lv, difficulty, difficulty_lv = 50, 'expert', 20
 
     actions = init_actions_from_intepreted_score('interpreted/yes_bang_dream_expert_interpreted.json')
     print_actions(actions)
@@ -522,13 +560,14 @@ end
 
 
 --[[ ********** #MARK main ********** ]]
---linux_main()
+if is_linux_debug then linux_main() end
 
 socket = require("socket")
 w, h = getScreenResolution()
 
 device_type = init_device_type()
 sampling_period = init_sampling_period()
+--sampling_period = 1/30
 
 btns = init_btns()
 key_pixels, key_pixels_color = init_key_pixels()
@@ -536,7 +575,7 @@ key_pixels, key_pixels_color = init_key_pixels()
 math.randomseed(os.time())
 
 is_random_song, is_multi_mode, remaining_loop = nil, nil, 1
-lv, difficulty = 10, 25
+lv, difficulty, difficulty_lv = 20, 'expert', 20
 
 
 -- TODO (low) prompt for instruction cycle
@@ -555,10 +594,10 @@ while remaining_loop > 0 do
     remaining_loop = remaining_loop - 1
 
     local song_name = 'yes_bang_dream'
-    local interpreted_score_path = interpreted_score_dir_path .. song_name .. '_expert' .. '_interpreted.json'
+    local interpreted_score_path = interpreted_score_dir_path .. song_name .. '_' .. difficulty .. '_interpreted.json'
     local playable = '/var/mobile/Library/AutoTouch/Scripts/Autodori/playable/yes_bang_dream_expert_playable.json'
     local actions = init_actions_from_intepreted_score(interpreted_score_path)
---    local actions = prepare_song(playable)
+    --    local actions = prepare_song(playable)
     toast('ready')
 
     --    check_sceen_match('live', 'wait', 'press')
@@ -569,7 +608,7 @@ while remaining_loop > 0 do
     --        btn_press('confirm_song')
     --        check_sceen_match('live_start', 'wait', 'press')
     wait_until_album_disappear()
-    usleep(3000000)
+    usleep(3000000 - START_TIME_OFFSET * 1000000)
     play(actions)
     --    end
 end

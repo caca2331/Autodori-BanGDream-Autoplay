@@ -137,7 +137,7 @@ def interpret_score(score_name, print_result=False):
                         v[track] = True
                     else:
                         timed_actions.append(
-                            [time_offset, track, track, 5 if token in ["flick", "fever_note_flick"] else 6])
+                            [time_offset, track, track, 6 if token in ["flick", "fever_note_flick"] else 5])
                         v[track] = False
 
                 # single note, or non-vertical slide
@@ -155,10 +155,10 @@ def interpret_score(score_name, print_result=False):
                         v[8] = True
 
                     elif token in ["slide_end_a", "slide_end_flick_a"]:
-                        timed_actions.append([time_offset, track, 8, (5 if token in ["slide_end_flick_a"] else 6)])
+                        timed_actions.append([time_offset, track, 8, (6 if token in ["slide_end_flick_a"] else 5)])
                         v[0] = False
                     elif token in ["slide_end_b", "slide_end_flick_b"]:
-                        timed_actions.append([time_offset, track, 9, (5 if token in ["slide_end_flick_b"] else 6)])
+                        timed_actions.append([time_offset, track, 9, (6 if token in ["slide_end_flick_b"] else 5)])
                         v[8] = True
 
     def write_to_file():
